@@ -46,3 +46,14 @@ target_link_libraries( # Specifies the target library.
         # Links the target library to the log library
         # included in the NDK.
         ${log-lib})
+
+add_library(
+        file-watcher
+        SHARED
+        file-watcher.cpp
+)
+
+target_link_libraries(
+        file-watcher
+        ${log-lib}
+)
