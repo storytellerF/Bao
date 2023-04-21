@@ -12,8 +12,7 @@ import java.io.File
 
 class Bao(val app: Application, val block: (Throwable?) -> Boolean) {
     private val file by lazy {
-        val file = File(app.cacheDir, nativeExceptionFileName)
-        file
+        nativeExceptionFile(app)
     }
     private val handler = Handler(Looper.getMainLooper())
     private val observer by lazy {
@@ -57,7 +56,8 @@ class Bao(val app: Application, val block: (Throwable?) -> Boolean) {
             }
         }
         observer.startWatching()
-        registerActionHandler(file.absolutePath)
+        transferNativeExceptionFilePath(file.absolutePath)
+        registerActionHandler(11)
     }
 
     companion object {
@@ -65,11 +65,15 @@ class Bao(val app: Application, val block: (Throwable?) -> Boolean) {
         const val exceptionKey = "exception"
         private const val nativeExceptionFileName = "catch.txt"
 
-        external fun registerActionHandler(exceptionFilePath: String)
+        external fun registerActionHandler(signal: Int)
+        external fun transferNativeExceptionFilePath(path: String)
 
         fun readException(context: Context): String {
-            return File(context.cacheDir, nativeExceptionFileName).readText()
+            return nativeExceptionFile(context).readText()
         }
+
+        private fun nativeExceptionFile(context: Context) =
+            File(context.cacheDir, nativeExceptionFileName)
 
         init {
             System.loadLibrary("bao")

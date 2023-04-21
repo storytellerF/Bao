@@ -80,23 +80,24 @@ static void sig_handler(int sig, struct siginfo *info, void *context) {
     backtraceToLogcat();
 }
 
-static struct sigaction old;
-
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_storyteller_1f_bao_1library_Bao_00024Companion_registerActionHandler(JNIEnv *env,
                                                                               jobject thiz,
-                                                                              jstring exceptionFilePath) {
+                                                                              int signal) {
     struct sigaction customHandler{};
     // 自定义处理器
     customHandler.sa_sigaction = sig_handler;
     sigemptyset(&customHandler.sa_mask);
     customHandler.sa_flags = SA_SIGINFO | SA_ONSTACK | SA_RESTART;
     // 注册信号
-    int flag = sigaction(SIGSEGV, &customHandler, &old);
-    printf("flag %d", flag);
-    char result[30];
-    sprintf(result, "flag %d", flag);
-    __android_log_write(ANDROID_LOG_DEBUG, tag, result);
-    exception_file_path = env->GetStringUTFChars(exceptionFilePath, nullptr);;
+    int flag = sigaction(signal, &customHandler, nullptr);
+    __android_log_print(ANDROID_LOG_DEBUG, tag, "sigaction %d result %d", signal, flag);
+}
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_storyteller_1f_bao_1library_Bao_00024Companion_transferNativeExceptionFilePath(JNIEnv *env,
+                                                                                        jobject thiz,
+                                                                                        jstring path) {
+    exception_file_path = env->GetStringUTFChars(path, nullptr);
 }
