@@ -29,12 +29,13 @@ android {
             )
         }
     }
+    val version = JavaVersion.VERSION_11
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = version
+        targetCompatibility = version
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = version.toString()
     }
     buildFeatures {
         compose = true

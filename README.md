@@ -2,6 +2,8 @@
 
 枹
 
+[![](https://jitpack.io/v/storytellerF/Bao.svg)](https://jitpack.io/#storytellerF/Bao)
+
 拦截未处理的Exception
 
 支持native
