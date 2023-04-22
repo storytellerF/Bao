@@ -1,30 +1,28 @@
 package com.storyteller_f.bao_library
 
-import kotlin.concurrent.thread
-
 interface IFileWatcher {
     fun start()
     fun stop()
 }
 
 abstract class FileWatcher(private val path: String) : IFileWatcher {
+    private var nativePtr: Int = -1
     override fun start() {
-        thread {
-            startNative(path)
-        }
+        nativePtr = startNative(path)
     }
 
     override fun stop() {
-        stopNative()
+        if (nativePtr != -1)
+            stopNative(nativePtr);
     }
 
-    abstract fun onEvent(event: Int)
+    abstract fun onEvent(event: Long)
     protected fun finalize() {
         stop()
     }
 
-    private external fun startNative(path: String)
-    private external fun stopNative()
+    private external fun startNative(path: String): Int
+    private external fun stopNative(ptr: Int)
 
     companion object {
         private const val TAG = "FileWatcher"
