@@ -28,9 +28,9 @@ class Bao(val app: Application, val block: (Throwable?) -> Boolean) {
             }
         } else {
             object : FileWatcher(file.absolutePath) {
-                override fun onEvent(event: Int) {
+                override fun onEvent(event: Long) {
                     Log.d(TAG, "onEvent() called with: event = $event")
-                    if (event == 2) fileWriteDone()
+                    if (event == 2L) fileWriteDone()
                 }
 
             }
