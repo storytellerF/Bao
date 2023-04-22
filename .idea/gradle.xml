@@ -13,6 +13,8 @@
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/bao-library" />
+            <option value="$PROJECT_DIR$/startup" />
+            <option value="$PROJECT_DIR$/startup-example" />
           </set>
         </option>
       </GradleProjectSettings>

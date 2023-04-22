@@ -15,3 +15,5 @@ dependencyResolutionManagement {
 rootProject.name = "Bao"
 include ':app'
 include ':bao-library'
+include ':startup'
+include ':startup-example'

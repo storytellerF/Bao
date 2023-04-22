@@ -1,7 +1,7 @@
 package com.storyteller_f.bao_library
 
-import android.app.Application
 import android.content.Context
+import android.content.Intent
 import android.os.Build
 import android.os.FileObserver
 import android.os.Handler
@@ -9,8 +9,27 @@ import android.os.Looper
 import android.util.Log
 import java.io.File
 
+fun defaultBaoHandler(it: Throwable?, context: Context): Boolean {
+    Thread {
+        Thread.sleep(500)
+        context.startActivity(Intent(context, ExceptionActivity::class.java).apply {
+            putExtra(Bao.exceptionKey, it)
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        })
+    }.start()
+    return true
+}
 
-class Bao(val app: Application, val block: (Throwable?) -> Boolean) {
+fun stringBaoHandler(it: Throwable?, context: Context): Boolean {
+    return if (it != null) {
+        Bao.nativeExceptionFile(context).writeText(it.stackTraceToString())
+        true
+    } else {
+        defaultBaoHandler(null, context)
+    }
+}
+
+class Bao(val app: Context, val block: (Throwable?, Context) -> Boolean = ::stringBaoHandler) {
     private val file by lazy {
         nativeExceptionFile(app)
     }
@@ -23,6 +42,7 @@ class Bao(val app: Application, val block: (Throwable?) -> Boolean) {
                     Log.d(TAG, "onEvent() called with: event = $event, path = $path")
                     if (event == CLOSE_WRITE) fileWriteDone()
                 }
+
                 override fun start() = startWatching()
                 override fun stop() = stopWatching()
             }
@@ -40,7 +60,7 @@ class Bao(val app: Application, val block: (Throwable?) -> Boolean) {
     private fun fileWriteDone() {
         handler.removeCallbacksAndMessages(null)
         handler.postDelayed({
-            block(null)
+            block(null, app)
         }, 200)
     }
 
@@ -50,7 +70,7 @@ class Bao(val app: Application, val block: (Throwable?) -> Boolean) {
                 try {
                     Looper.loop()
                 } catch (e: Exception) {
-                    if (!block(e)) {
+                    if (!block(e, app)) {
                         throw e
                     }
                 }
@@ -60,7 +80,7 @@ class Bao(val app: Application, val block: (Throwable?) -> Boolean) {
         Thread.setDefaultUncaughtExceptionHandler { t, e ->
             Log.i(TAG, "onCreate: ${Thread.currentThread()}")
             Log.i(TAG, "onCreate: $t")
-            if (!block(e)) {
+            if (!block(e, app)) {
                 old?.uncaughtException(t, e)
             }
         }
@@ -83,7 +103,7 @@ class Bao(val app: Application, val block: (Throwable?) -> Boolean) {
             return nativeExceptionFile(context).readText()
         }
 
-        private fun nativeExceptionFile(context: Context) =
+        internal fun nativeExceptionFile(context: Context) =
             File(context.cacheDir, nativeExceptionFileName)
 
         init {
