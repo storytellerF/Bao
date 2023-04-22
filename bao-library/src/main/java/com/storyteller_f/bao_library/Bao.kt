@@ -66,7 +66,9 @@ class Bao(val app: Application, val block: (Throwable?) -> Boolean) {
         }
         observer.start()
         transferNativeExceptionFilePath(file.absolutePath)
-        registerActionHandler(11)
+        repeat(32) {
+            registerActionHandler(it)
+        }
     }
 
     companion object {

@@ -53,7 +53,7 @@ void dumpBacktrace(std::ostream &os, void **buffer, size_t count) {
     }
 }
 
-void backtraceToLogcat() {
+void backtraceToLogcat(char* info) {
     const size_t max = 30; // 调用的层数
     void *buffer[max];
     std::ostringstream oss;
@@ -64,6 +64,7 @@ void backtraceToLogcat() {
                   ios::ate); // 创建文件流
     if (file.is_open()) { // 确保文件流已打开
         string str = oss.str(); // 要写入的字符串
+        file << info << endl;
         file << str; // 将字符串写入文件
         file.close(); // 关闭文件流
     } else {
@@ -77,7 +78,7 @@ static void sig_handler(int sig, struct siginfo *info, void *context) {
     auto *uContext = static_cast<ucontext_t *>(context);
     sprintf(result, "handler sig:%d errno:%d flags:%lu", sig, info->si_errno, uContext->uc_flags);
     __android_log_write(ANDROID_LOG_DEBUG, tag, result);
-    backtraceToLogcat();
+    backtraceToLogcat(result);
 }
 
 extern "C"
