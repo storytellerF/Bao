@@ -14,6 +14,7 @@
 //
 const char *tag = "file-watcher";
 int fd, wd;
+//todo thread
 
 extern "C"
 JNIEXPORT void JNICALL
