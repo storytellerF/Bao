@@ -18,21 +18,30 @@ class Bao(val app: Application, val block: (Throwable?) -> Boolean) {
     private val observer by lazy {
         if (!file.exists()) file.createNewFile()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            object : FileObserver(file) {
+            object : FileObserver(file), IFileWatcher {
                 override fun onEvent(event: Int, path: String?) {
                     Log.d(TAG, "onEvent() called with: event = $event, path = $path")
-                    if (event == CLOSE_WRITE) {
-                        handler.removeCallbacksAndMessages(null)
-                        handler.postDelayed({
-                            block(null)
-                        }, 200)
-                    }
+                    if (event == CLOSE_WRITE) fileWriteDone()
+                }
+                override fun start() = startWatching()
+                override fun stop() = stopWatching()
+            }
+        } else {
+            object : FileWatcher(file.absolutePath) {
+                override fun onEvent(event: Int) {
+                    Log.d(TAG, "onEvent() called with: event = $event")
+                    if (event == 2) fileWriteDone()
                 }
 
             }
-        } else {
-            TODO("VERSION.SDK_INT < Q")
         }
+    }
+
+    private fun fileWriteDone() {
+        handler.removeCallbacksAndMessages(null)
+        handler.postDelayed({
+            block(null)
+        }, 200)
     }
 
     fun bao() {
@@ -55,7 +64,7 @@ class Bao(val app: Application, val block: (Throwable?) -> Boolean) {
                 old?.uncaughtException(t, e)
             }
         }
-        observer.startWatching()
+        observer.start()
         transferNativeExceptionFilePath(file.absolutePath)
         registerActionHandler(11)
     }
