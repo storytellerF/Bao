@@ -1,3 +1,5 @@
+jdk:
+  - openjdk8
 before_install:
   - yes | sdkmanager "cmake;3.18.1"
   - sdk install java 17.0.5-oracle
