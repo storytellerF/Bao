@@ -9,10 +9,10 @@ import android.os.Looper
 import android.util.Log
 import java.io.File
 
-fun defaultBaoHandler(it: Throwable?, context: Context): Boolean {
+fun Context.defaultBaoHandler(it: Throwable?): Boolean {
     Thread {
         Thread.sleep(500)
-        context.startActivity(Intent(context, ExceptionActivity::class.java).apply {
+        startActivity(Intent(this, ExceptionActivity::class.java).apply {
             putExtra(Bao.exceptionKey, it)
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         })
@@ -20,16 +20,19 @@ fun defaultBaoHandler(it: Throwable?, context: Context): Boolean {
     return true
 }
 
-fun stringBaoHandler(it: Throwable?, context: Context): Boolean {
+fun Context.stringBaoHandler(it: Throwable?): Boolean {
     return if (it != null) {
-        Bao.nativeExceptionFile(context).writeText(it.stackTraceToString())
+        Bao.nativeExceptionFile(this).writeText(it.stackTraceToString())
         true
     } else {
-        defaultBaoHandler(null, context)
+        defaultBaoHandler(null)
     }
 }
 
-class Bao(val app: Context, val block: (Throwable?, Context) -> Boolean = ::stringBaoHandler) {
+/**
+ * Throwable 如果为null，说明异常信息存储在cache.txt 中。使用`Bao.readException(context)` 读取。
+ */
+class Bao(val app: Context, val block: Context.(Throwable?) -> Boolean = Context::stringBaoHandler) {
     private val file by lazy {
         nativeExceptionFile(app)
     }
@@ -60,7 +63,7 @@ class Bao(val app: Context, val block: (Throwable?, Context) -> Boolean = ::stri
     private fun fileWriteDone() {
         handler.removeCallbacksAndMessages(null)
         handler.postDelayed({
-            block(null, app)
+            app.block(null)
         }, 200)
     }
 
@@ -70,7 +73,7 @@ class Bao(val app: Context, val block: (Throwable?, Context) -> Boolean = ::stri
                 try {
                     Looper.loop()
                 } catch (e: Exception) {
-                    if (!block(e, app)) {
+                    if (!app.block(e)) {
                         throw e
                     }
                 }
@@ -80,7 +83,7 @@ class Bao(val app: Context, val block: (Throwable?, Context) -> Boolean = ::stri
         Thread.setDefaultUncaughtExceptionHandler { t, e ->
             Log.i(TAG, "onCreate: ${Thread.currentThread()}")
             Log.i(TAG, "onCreate: $t")
-            if (!block(e, app)) {
+            if (!app.block(e)) {
                 old?.uncaughtException(t, e)
             }
         }

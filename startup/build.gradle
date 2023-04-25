@@ -16,10 +16,10 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled true
+            minifyEnabled false
             proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                    getDefaultProguardFile("proguard-android-optimize.txt"),
+                    "proguard-rules.pro"
             )
         }
     }
@@ -41,5 +41,8 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     implementation("androidx.startup:startup-runtime:1.1.1")
-    implementation(project(":bao-library"))
+    def rootDir = rootProject.projectDir.absolutePath
+    if (projectDir.absolutePath.startsWith(rootDir))
+        implementation(project(":bao-library"))
+    else implementation(project(":bao:bao-library"))
 }
