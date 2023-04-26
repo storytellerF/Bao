@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId = "com.storyteller_f.startup_example"
-        minSdk = 24
+        minSdk = 21
         targetSdk = 33
         versionCode = 1
         versionName = "1.0"

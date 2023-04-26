@@ -14,7 +14,7 @@
 
 手动
 ```kts
-implementation("com.github.storytellerF.Bao:bao-library:1.26")
+implementation("com.github.storytellerF.Bao:bao-library:2.1")
 ```
 
 ```kotlin
@@ -38,5 +38,7 @@ val block: Context.(Throwable?) -> Boolean = ::stringBaoHandler
 
 自动
 ```kts
-implementation("com.github.storytellerF:startup:1.26")
+implementation("com.github.storytellerF:startup:2.1")
 ```
+
+使用`stringBaoHandler` 处理，暂不支持自定义。

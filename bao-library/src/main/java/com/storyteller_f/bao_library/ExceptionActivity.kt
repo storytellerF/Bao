@@ -9,8 +9,10 @@ import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.content.ContextCompat
 import androidx.core.view.DisplayCompat
 import androidx.core.view.isVisible
 
@@ -32,14 +34,17 @@ class ExceptionActivity : AppCompatActivity() {
         val exceptionContent: CharSequence = exception?.stackTraceToString() ?: Bao.readException(this)
         exceptionText.text = exceptionContent
         wrappedExceptionText.text = exceptionContent
-        val systemService = getSystemService(ClipboardManager::class.java)
+
+        val systemService = ContextCompat.getSystemService(this, ClipboardManager::class.java)
         findViewById<ImageButton>(R.id.copy).setOnClickListener {
-            systemService.setPrimaryClip(
-                ClipData.newPlainText(
-                    "exception content",
-                    exceptionContent
+            if (systemService != null) {
+                systemService.setPrimaryClip(
+                    ClipData.newPlainText(
+                        "exception content",
+                        exceptionContent
+                    )
                 )
-            )
+            } else Toast.makeText(this, "no clipboard", Toast.LENGTH_SHORT).show()
         }
         findViewById<ImageButton>(R.id.wrap_text).setOnClickListener {
             wrappedExceptionText.isVisible = !wrappedExceptionText.isVisible
