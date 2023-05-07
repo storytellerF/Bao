@@ -50,6 +50,7 @@ object LinuxSig {
 }
 
 fun Context.defaultBaoHandler(it: Throwable?): Boolean {
+    Log.d("Bao", "defaultBaoHandler() called with: it = $it")
     Thread {
         Thread.sleep(500)
         startActivity(Intent(this, ExceptionActivity::class.java).apply {
@@ -61,6 +62,7 @@ fun Context.defaultBaoHandler(it: Throwable?): Boolean {
 }
 
 fun Context.stringBaoHandler(it: Throwable?): Boolean {
+    Log.d("Bao", "stringBaoHandler() called with: it = $it")
     return if (it != null) {
         Bao.nativeExceptionFile(this).writeText(it.stackTraceToString())
         true
@@ -73,7 +75,7 @@ fun Context.stringBaoHandler(it: Throwable?): Boolean {
  * Throwable 如果为null，说明异常信息存储在cache.txt 中。使用`Bao.readException(context)` 读取。
  */
 class Bao(
-    val app: Context,
+    private val app: Context,
     val block: Context.(Throwable?) -> Boolean = Context::stringBaoHandler
 ) {
     private val file by lazy {
@@ -111,11 +113,13 @@ class Bao(
     }
 
     fun bao() {
-        Handler(Looper.getMainLooper()).post {
+        Handler(Looper.getMainLooper()).postAtFrontOfQueue {
             while (true) {
+                Log.v(TAG, "bao: loop start")
                 try {
                     Looper.loop()
                 } catch (e: Exception) {
+                    Log.i(TAG, "bao: loop $e")
                     if (!app.block(e)) {
                         throw e
                     }
@@ -124,8 +128,8 @@ class Bao(
         }
         val old = Thread.getDefaultUncaughtExceptionHandler()
         Thread.setDefaultUncaughtExceptionHandler { t, e ->
-            Log.i(TAG, "onCreate: ${Thread.currentThread()}")
-            Log.i(TAG, "onCreate: $t")
+            Log.i(TAG, "bao: current ${Thread.currentThread()}")
+            Log.i(TAG, "bao: input $t")
             if (!app.block(e)) {
                 old?.uncaughtException(t, e)
             }
