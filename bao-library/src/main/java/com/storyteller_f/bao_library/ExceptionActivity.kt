@@ -4,20 +4,21 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.os.Build
 import android.os.Bundle
-import android.text.StaticLayout
-import android.view.WindowManager
-import android.widget.FrameLayout
+import android.util.TypedValue
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
-import androidx.core.view.DisplayCompat
 import androidx.core.view.isVisible
 
 class ExceptionActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        val typeValue = TypedValue()
+        val getThemeResult = theme.resolveAttribute(R.attr.exceptionPageTheme, typeValue, false)
+        if (getThemeResult) {
+            setTheme(typeValue.data)
+        }
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_exception)
 

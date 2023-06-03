@@ -9,6 +9,7 @@ import android.os.Looper
 import android.util.Log
 import java.io.File
 
+@Suppress("unused")
 object LinuxSig {
     const val hup = 1
     const val int = 2
@@ -118,7 +119,7 @@ class Bao(
                 Log.v(TAG, "bao: loop start")
                 try {
                     Looper.loop()
-                } catch (e: Exception) {
+                } catch (e: Throwable) {
                     Log.i(TAG, "bao: loop $e")
                     if (!app.block(e)) {
                         throw e
