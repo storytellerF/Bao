@@ -60,11 +60,12 @@ class ExceptionActivity : AppCompatActivity() {
         exceptionKey: String,
         clazz: Class<T>
     ): T? {
+        this ?: return null
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            this?.getSerializableExtra(exceptionKey, clazz)
+            getSerializableExtra(exceptionKey, clazz)
         } else {
             @Suppress("DEPRECATION")
-            clazz.cast(this?.getSerializableExtra(exceptionKey))
+            clazz.cast(getSerializableExtra(exceptionKey))
         }
     }
 }
