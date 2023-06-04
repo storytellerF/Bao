@@ -2,6 +2,7 @@ package com.storyteller_f.bao_library
 
 import android.content.ClipData
 import android.content.ClipboardManager
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.util.TypedValue
@@ -11,6 +12,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
+import java.io.Serializable
 
 class ExceptionActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -22,17 +24,12 @@ class ExceptionActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_exception)
 
-
         val exceptionText = findViewById<TextView>(R.id.text)
         val wrappedExceptionText = findViewById<TextView>(R.id.wrapped_text)
-        val exception = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            intent?.getSerializableExtra(Bao.exceptionKey, Throwable::class.java)
-        } else {
-            @Suppress("DEPRECATION")
-            intent?.getSerializableExtra(Bao.exceptionKey) as? Throwable
-        }
+        val exception = getThrowable()
 
-        val exceptionContent: CharSequence = exception?.stackTraceToString() ?: Bao.readException(this)
+        val exceptionContent: CharSequence =
+            exception?.stackTraceToString() ?: Bao.readException(this)
         exceptionText.text = exceptionContent
         wrappedExceptionText.text = exceptionContent
 
@@ -50,6 +47,24 @@ class ExceptionActivity : AppCompatActivity() {
         findViewById<ImageButton>(R.id.wrap_text).setOnClickListener {
             wrappedExceptionText.isVisible = !wrappedExceptionText.isVisible
             exceptionText.isVisible = !exceptionText.isVisible
+        }
+    }
+
+    private fun getThrowable() = intent.getSerializableExtraCompat(
+        Bao.exceptionKey,
+        Throwable::class.java
+    )
+
+    @Suppress("SameParameterValue")
+    private fun <T : Serializable> Intent?.getSerializableExtraCompat(
+        exceptionKey: String,
+        clazz: Class<T>
+    ): T? {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            this?.getSerializableExtra(exceptionKey, clazz)
+        } else {
+            @Suppress("DEPRECATION")
+            clazz.cast(this?.getSerializableExtra(exceptionKey))
         }
     }
 }
