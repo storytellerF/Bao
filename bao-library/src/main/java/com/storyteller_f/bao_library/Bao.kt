@@ -8,6 +8,7 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import java.io.File
+import kotlin.concurrent.thread
 
 @Suppress("unused")
 object LinuxSig {
@@ -52,13 +53,13 @@ object LinuxSig {
 
 fun Context.defaultBaoHandler(it: Throwable?): Boolean {
     Log.d("Bao", "defaultBaoHandler() called with: it = $it")
-    Thread {
+    thread {
         Thread.sleep(500)
         startActivity(Intent(this, ExceptionActivity::class.java).apply {
             putExtra(Bao.exceptionKey, it)
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         })
-    }.start()
+    }
     return true
 }
 
@@ -127,6 +128,7 @@ class Bao(
                 }
             }
         }
+        //fixme 无法开启loop
         val old = Thread.getDefaultUncaughtExceptionHandler()
         Thread.setDefaultUncaughtExceptionHandler { t, e ->
             Log.i(TAG, "bao: current ${Thread.currentThread()}")

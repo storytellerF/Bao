@@ -3,8 +3,13 @@ package com.storyteller_f.bao_library
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Intent
+import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
+import android.text.SpannableStringBuilder
+import android.text.Spanned
+import android.text.style.ForegroundColorSpan
+import android.util.Log
 import android.util.TypedValue
 import android.widget.ImageButton
 import android.widget.TextView
@@ -16,6 +21,7 @@ import java.io.Serializable
 
 class ExceptionActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        Log.d("ExceptionActivity", "onCreate() called with: savedInstanceState = $savedInstanceState")
         val typeValue = TypedValue()
         val getThemeResult = theme.resolveAttribute(R.attr.exceptionPageTheme, typeValue, false)
         if (getThemeResult) {
@@ -30,8 +36,22 @@ class ExceptionActivity : AppCompatActivity() {
 
         val exceptionContent: CharSequence =
             exception?.stackTraceToString() ?: Bao.readException(this)
-        exceptionText.text = exceptionContent
-        wrappedExceptionText.text = exceptionContent
+        val spannedExceptionContent = SpannableStringBuilder(exceptionContent).apply {
+            search(packageName) { start, end ->
+                val endIndex = indexOf("\n", end)
+                val lineEnd = if (endIndex > 0) {
+                    endIndex
+                } else end
+                setSpan(
+                    ForegroundColorSpan(Color.BLUE),
+                    start,
+                    lineEnd,
+                    Spanned.SPAN_INCLUSIVE_EXCLUSIVE
+                )
+            }
+        }
+        exceptionText.text = spannedExceptionContent
+        wrappedExceptionText.text = spannedExceptionContent
 
         val systemService = ContextCompat.getSystemService(this, ClipboardManager::class.java)
         findViewById<ImageButton>(R.id.copy).setOnClickListener {
@@ -47,6 +67,21 @@ class ExceptionActivity : AppCompatActivity() {
         findViewById<ImageButton>(R.id.wrap_text).setOnClickListener {
             wrappedExceptionText.isVisible = !wrappedExceptionText.isVisible
             exceptionText.isVisible = !exceptionText.isVisible
+        }
+    }
+
+    private fun SpannableStringBuilder.search(
+        pattern: String,
+        whenSearched: SpannableStringBuilder.(Int, Int) -> Unit
+    ) {
+        var start = 0
+        while (true) {
+            val indexOf = indexOf(pattern, start)
+            if (indexOf < 0) {
+                break
+            }
+            start = indexOf + 1
+            whenSearched(indexOf, indexOf + pattern.length)
         }
     }
 
