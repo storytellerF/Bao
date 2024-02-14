@@ -13,11 +13,14 @@
 #define BUF_LEN (1024 * (EVENT_SIZE + 16))
 
 const char *tag = "file-watcher";
+/**
+ * 存储wd，用于关闭file-watcher。fd 会返回给java 环境。
+ */
 std::map<int, int> watcherPair;
 struct WatcherContext {
     JNIEnv *env;
-    jobject thiz;
-    jmethodID send;
+    jobject watcher;
+    jmethodID dispatchEvent;
     int fd;
 };
 
@@ -39,7 +42,7 @@ void *my_thread_function(void *arg) {
              ptr += sizeof(struct inotify_event) + event->len) {
             event = (struct inotify_event *) ptr;
             jlong mask = event->mask;
-           context->env->CallVoidMethod(context->thiz, context->send, mask);
+           context->env->CallVoidMethod(context->watcher, context->dispatchEvent, mask);
         }
     }
     return nullptr;
@@ -50,7 +53,7 @@ JNIEXPORT jint JNICALL
 Java_com_storyteller_1f_bao_1library_FileWatcher_startNative(JNIEnv *env, jobject thiz,
                                                              jstring path) {
     jclass cl = env->GetObjectClass(thiz);
-    jmethodID sendFileEvent = env->GetMethodID(cl, "onEvent", "(J)V");
+    jmethodID dispatchEvent = env->GetMethodID(cl, "dispatchEvent", "(I)V");
     int fd = inotify_init();
     if (fd == -1) {
         __android_log_print(ANDROID_LOG_DEBUG, tag, "init failed %s", strerror(errno));
@@ -68,7 +71,7 @@ Java_com_storyteller_1f_bao_1library_FileWatcher_startNative(JNIEnv *env, jobjec
 
     pthread_t thread;
     struct WatcherContext context{
-        env, thiz, sendFileEvent, fd
+            env, thiz, dispatchEvent, fd
     };
     int result = pthread_create(&thread, nullptr, my_thread_function, &context);
     if (result != 0) {

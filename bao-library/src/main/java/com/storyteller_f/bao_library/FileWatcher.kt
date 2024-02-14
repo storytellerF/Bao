@@ -16,13 +16,20 @@ abstract class FileWatcher(private val path: String) : IFileWatcher {
             stopNative(nativePtr);
     }
 
-    abstract fun onEvent(event: Long)
+    abstract fun onEvent(event: Int)
     protected fun finalize() {
         stop()
     }
 
     private external fun startNative(path: String): Int
     private external fun stopNative(ptr: Int)
+
+    /**
+     * 用于native 执行。
+     */
+    fun dispatchEvent(event: Int) {
+        onEvent(event)
+    }
 
     companion object {
 

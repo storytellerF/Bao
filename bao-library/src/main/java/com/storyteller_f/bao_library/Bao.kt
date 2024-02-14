@@ -57,9 +57,9 @@ class Bao(
             }
         } else {
             object : FileWatcher(file.absolutePath) {
-                override fun onEvent(event: Long) {
+                override fun onEvent(event: Int) {
                     Log.d(TAG, "onEvent() called with: event = $event")
-                    if (event == 2L) nativeFileWriteDone()
+                    if (event == 2) nativeFileWriteDone()
                 }
 
             }
