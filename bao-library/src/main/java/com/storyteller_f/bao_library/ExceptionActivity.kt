@@ -19,7 +19,6 @@ import androidx.core.view.isVisible
 class ExceptionActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.d("ExceptionActivity", "onCreate() called with: savedInstanceState = $savedInstanceState")
-        notifyExceptionHandled()
         applyTheme()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_exception)
@@ -32,6 +31,11 @@ class ExceptionActivity : AppCompatActivity() {
         flashContent(exceptionContent, exceptionText, wrappedExceptionText)
 
         setupEvent(exceptionContent, wrappedExceptionText, exceptionText)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        notifyExceptionHandled()
     }
 
     private fun flashContent(
